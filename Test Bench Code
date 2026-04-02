@@ -1,0 +1,30 @@
+`timescale 1ns / 1ps
+
+module Simple_Digital_Calculator_TB();
+    reg [7:0] switches;
+    wire [7:0] leds;
+
+    Simple_Digital_Calculator uut (.switches(switches), .leds(leds));
+
+    initial begin
+        switches = 8'h00; #100;
+
+        // Test 1: Addition (3 + 2 = 5) -> 11_00_00_10
+        switches = 8'b11_00_00_10; #50;
+        $display("ADD: 3+2 Result=%b (Exp: 0101)", leds[3:0]);
+
+        // Test 2: Subtraction (3 - 1 = 2) -> 11_00_01_01
+        switches = 8'b11_00_01_01; #50;
+        $display("SUB: 3-1 Result=%b (Exp: 0010)", leds[3:0]);
+
+        // Test 3: Multiplication (3 * 3 = 9) -> 11_00_10_11
+        switches = 8'b11_00_10_11; #50;
+        $display("MUL: 3*3 Result=%b (Exp: 1001)", leds[3:0]);
+
+        // Test 4: Division by Zero Error -> 10_00_11_00
+        switches = 8'b10_00_11_00; #50;
+        if (leds[7]) $display("DIV0: Error detected successfully!");
+
+        $finish;
+    end
+endmodule
