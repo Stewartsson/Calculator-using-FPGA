@@ -1,0 +1,55 @@
+/*
+ * Module: Simple_Digital_Calculator
+ * Target: ZedBoard (Zynq-7000)
+ * Description: A 2-bit Multi-Function ALU performing +, -, *, and /.
+ * * Inputs:
+ * switches[7:6] -> Input A (2 bits)
+ * switches[3:2] -> OpCode (00:+, 01:-, 10:*, 11:/)
+ * switches[1:0] -> Input B (2 bits)
+ * Outputs:
+ * leds[3:0]     -> 4-bit Result
+ * leds[7]       -> Division by Zero Error Flag
+ */
+
+module Simple_Digital_Calculator (
+    input  wire [7:0] switches, 
+    output reg  [7:0] leds      
+);
+
+    // Internal signals for clarity
+    wire [1:0] a  = switches[7:6]; // Input A
+    wire [1:0] b  = switches[1:0]; // Input B
+    wire [1:0] op = switches[3:2]; // Operation Selector
+    
+    reg [3:0] result;
+    reg       div_error;
+
+    // Combinational ALU Logic
+    always @(*) begin
+        result = 4'd0;
+        div_error = 1'b0;
+        
+        case (op)
+            2'b00: result = a + b;         // ADDITION (+)
+            2'b01: result = a - b;         // SUBTRACTION (-)
+            2'b10: result = a * b;         // MULTIPLICATION (*)
+            2'b11: begin                   // DIVISION (/)
+                if (b == 2'b00) begin
+                    result = 4'd0;
+                    div_error = 1'b1;      // Error: Div by 0
+                end else begin
+                    result = a / b;
+                end
+            end
+            default: result = 4'd0;
+        endcase
+    end
+
+    // Mapping to physical LEDs
+    always @(*) begin
+        leds = 8'b0000_0000;      
+        leds[3:0] = result;       // Result on LD3-LD0
+        leds[7]   = div_error;    // Error Flag on LD7
+    end
+
+endmodule
